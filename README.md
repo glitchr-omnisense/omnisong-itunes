@@ -1,6 +1,6 @@
 # omnisong/itunes
 
-The iTunes Search API for [omniscient/omnisong](https://github.com/glitchr-studio/omnisong): a
+The iTunes Search API for [omnisense/omnisong](https://github.com/glitchr-omnisense/omnisong): a
 release with its tracks, their 30-second previews and its artwork, and an artist's albums - no
 key, through the application's HTTP client.
 
@@ -8,7 +8,7 @@ key, through the application's HTTP client.
 $itunes = (new ItunesCatalogFactory($http))->create(['country' => 'de']);   // $http: the application's HTTP client; none given, the factory makes its own
 ```
 
-No framework needed: the package requires `omniscient/omnisong` and `symfony/http-client`. In a
+No framework needed: the package requires `omnisense/omnisong` and `symfony/http-client`. In a
 Symfony application, the same through the bundle's configuration:
 
 ```yaml
