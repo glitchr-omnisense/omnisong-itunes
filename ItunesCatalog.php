@@ -224,7 +224,7 @@ final class ItunesCatalog implements CatalogInterface
             throw new UnavailableException('itunes', $e->getMessage(), null, $e);
         }
         if (403 === $status || 429 === $status) {
-            throw new RateLimitedException('itunes', isset($headers['retry-after'][0]) ? (int) $headers['retry-after'][0] : null);
+            throw new RateLimitedException('itunes', self::retryAfter($headers['retry-after'][0] ?? null));
         }
         if (404 === $status) {
             return [];
@@ -242,4 +242,19 @@ final class ItunesCatalog implements CatalogInterface
 
         return array_values(array_filter((array) ($answer['results'] ?? []), 'is_array'));
     }
+
+    /** Retry-After in seconds, or as an HTTP date (RFC 9110 §10.2.3): the seconds until then, at least 1. */
+    private static function retryAfter(?string $value): ?int
+    {
+        if (null === $value || '' === trim($value)) {
+            return null;
+        }
+        if (ctype_digit(trim($value))) {
+            return (int) $value;
+        }
+        $at = strtotime($value);
+
+        return false === $at ? null : max(1, $at - time());
+    }
+
 }

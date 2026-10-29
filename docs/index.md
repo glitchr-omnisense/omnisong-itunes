@@ -151,8 +151,7 @@ omnisong:
 | transport error, timeout | `UnavailableException`, the client's exception as previous |
 | a reference it cannot read | `NotSupportedException`, before any call |
 
-> [!WARNING]
-> Known defect: `Retry-After` written as an HTTP date is read as `retryAfter = 0`, where the seconds until that date (or null) are expected.
+`Retry-After`, in seconds or as an HTTP date, is the exception's `retryAfter`.
 
 ## Verified, and not
 

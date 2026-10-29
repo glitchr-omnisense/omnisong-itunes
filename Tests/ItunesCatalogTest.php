@@ -188,4 +188,17 @@ final class ItunesCatalogTest extends TestCase
         $this->expectExceptionMessage('[itunes] HTTP 400 Invalid value(s) for key(s): [country]');
         $this->catalog(new MockResponse('{"errorMessage":"Invalid value(s) for key(s): [country]", "queryParameters":{}}', ['http_code' => 400]))->release(Reference::upc(self::UPC));
     }
+
+    /** Retry-After may be an HTTP date (RFC 9110 §10.2.3): the seconds until then. */
+    public function testARetryAfterDateIsTheSecondsUntilThen(): void
+    {
+        try {
+            $this->catalog(new MockResponse('', ['http_code' => 429, 'response_headers' => ['Retry-After' => gmdate(\DATE_RFC7231, time() + 120)]]))->release(Reference::upc(self::UPC));
+            self::fail('RateLimitedException expected');
+        } catch (RateLimitedException $e) {
+            self::assertGreaterThanOrEqual(118, $e->retryAfter);
+            self::assertLessThanOrEqual(120, $e->retryAfter);
+        }
+    }
+
 }
