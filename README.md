@@ -47,7 +47,7 @@ this package's code only and grants no right to the service or to its data.
 Whoever installs and runs this package is responsible for complying with the iTunes Search API's
 terms ([iTunes Search API terms](https://performance-partners.apple.com/search-api)), for obtaining
 whatever they require (an account, a key, a licence or subscription, an attribution or a citation, a
-rate limit to respect), and for any use made of what it returns. The authors publish it free of
+rate limit to respect: what is known of them is in `policy.json`), and for any use made of what it returns. The authors publish it free of
 charge, make no commercial use of it, and accept no liability for how it is used (see
 [LICENSE](LICENSE)).
 

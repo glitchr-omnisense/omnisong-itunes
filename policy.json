@@ -1,0 +1,47 @@
+{
+    "$schema": "https://github.com/glitchr-omnisense/contracts/blob/1.x/resources/usage-policy.schema.json",
+    "provider": "itunes",
+    "rateLimits": [
+        {
+            "max": 20,
+            "window": "minute",
+            "scope": "application",
+            "operations": [],
+            "note": "\"The Search API is limited to approximately 20 calls per minute (subject to change).\" (performance-partners.apple.com/search-api). Counted in HTTP requests: a call answered from memory costs nothing."
+        }
+    ],
+    "rights": {
+        "commercial": "allowed",
+        "openSourceRequired": null,
+        "caching": {
+            "permission": "allowed",
+            "maxTtl": null
+        },
+        "storage": "forbidden",
+        "redistribution": "unknown",
+        "attribution": {
+            "required": true,
+            "text": "Provided courtesy of iTunes",
+            "url": null,
+            "where": [
+                "display"
+            ]
+        },
+        "licence": null
+    },
+    "requirements": {
+        "key": false,
+        "userAgent": {
+            "required": false,
+            "pattern": null
+        }
+    },
+    "provenance": {
+        "terms": "https://performance-partners.apple.com/search-api",
+        "policy": "https://performance-partners.apple.com/search-api",
+        "verifiedAt": "2026-11-10",
+        "declaredBy": "maintainer",
+        "contact": null,
+        "notes": "The Promo Content terms on the same page: used \"only to promote store content and not for entertainment purposes\", placed \"only on pages that promote the content on which the Promo Content is based\", \"proximate to a 'Download on iTunes' or 'Download on App Store' badge (as approved by Apple)\" (\"Use of sound samples and other assets from the API must be proximate to a store badge\"), not used to promote any other goods or services; song previews \"streamed only, and not downloaded, saved, cached, or synchronized with video\" and attributed \"provided courtesy of iTunes\"; removed immediately on Apple's request. Hence storage forbidden (the previews and assets; the page says nothing of the metadata), commercial use allowed for that promotion only. Caching the search and lookup answers is what the page asks of large sites (\"set up caching logic\"); no time to live is given. Redistribution is not addressed. Governed by California law. Apple Music's badge and identity rules (Apple's marketing guidelines) apply to the links and players; omnisong's docs/policies.md lists them."
+    }
+}

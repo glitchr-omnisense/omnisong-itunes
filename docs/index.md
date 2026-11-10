@@ -162,6 +162,15 @@ albums come newest first, what is not Apple's is not read, and 403, 429 and 5xx 
 They pass (2026-10-26, PHP 8.4). The API was last called live on 2026-10-05
 ([omnisense/omnisong's installation](https://github.com/glitchr-omnisense/omnisong/blob/1.x/docs/installation.md)).
 
+## Usage policy
+
+`policy.json` (`ItunesCatalog::POLICY`, `extra.omnisense.policy`), read on Apple's page on
+2026-11-10: about 20 calls a minute, counted by the registry's guard in HTTP requests; commercial use
+for promoting the store's content only; the answers may be cached; the previews streamed only, never
+stored, near a store badge, with "Provided courtesy of iTunes". A 403 or 429 and its `Retry-After`
+hold the next calls (a `RateLimitedException`, nothing sent). See the core's
+[usage policies](https://github.com/glitchr-omnisense/omnisong/blob/1.x/docs/policies.md).
+
 ## Responsibility
 
 This package is an independent, unofficial client, not affiliated with, endorsed by or sponsored by

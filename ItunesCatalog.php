@@ -2,6 +2,9 @@
 
 namespace Omnisong\Itunes;
 
+use Omnisense\Contracts\Policy\Backoff;
+use Omnisense\Contracts\Policy\DeclaresUsagePolicyInterface;
+use Omnisense\Contracts\Policy\UsagePolicy;
 use Omnisong\Catalog\CatalogInterface;
 use Omnisong\Exception\NotSupportedException;
 use Omnisong\Exception\ProviderException;
@@ -14,6 +17,7 @@ use Omnisong\Model\Reference;
 use Omnisong\Model\Release;
 use Omnisong\Model\Track;
 use Omnisong\Platform;
+use Omnisong\Policy\CountsRequestsInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -22,10 +26,24 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * key): a release by its UPC, an ISRC, an Apple Music URL or its id, with
  * its tracks and their 30-second previews; an artist's albums. It gives no
  * ISRC and no composer, and only the Apple links - the others are Odesli's.
+ *
+ * Its usage policy is policy.json (usagePolicy()): about 20 calls a minute,
+ * the previews streamed only, near a store badge, "provided courtesy of
+ * iTunes". Given the catalogue's Backoff (its factory's Config::backoff()),
+ * a 403's or 429's Retry-After, a 503's, or a RateLimit field with nothing
+ * left holds the next calls - each a RateLimitedException with nothing sent
+ * - until the wait is over.
  */
-final class ItunesCatalog implements CatalogInterface
+final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterface, CountsRequestsInterface
 {
     public const BASE_URI = 'https://itunes.apple.com/';
+
+    /** The iTunes Search API's usage policy, as its pages read on the day it says (provenance.verifiedAt). */
+    public const POLICY = __DIR__.'/policy.json';
+
+    private static ?UsagePolicy $policy = null;
+
+    private int $sent = 0;
 
     /** The most a search answers with. */
     private const LIMIT = 200;
@@ -37,12 +55,23 @@ final class ItunesCatalog implements CatalogInterface
         private readonly HttpClientInterface $http,
         private readonly string $country = 'us',
         private readonly string $baseUri = self::BASE_URI,
+        private readonly ?Backoff $backoff = null,
     ) {
     }
 
     public function getName(): string
     {
         return 'itunes';
+    }
+
+    public function usagePolicy(): UsagePolicy
+    {
+        return self::$policy ??= UsagePolicy::fromFile(self::POLICY);
+    }
+
+    public function sentRequests(): int
+    {
+        return $this->sent;
     }
 
     public function links(Reference $reference): PlatformLinks
@@ -214,7 +243,12 @@ final class ItunesCatalog implements CatalogInterface
      */
     private function get(string $path, array $query): array
     {
+        if (0 < $left = $this->backoff?->left() ?? 0) {
+            // Apple asked to wait: nothing sent until then.
+            throw new RateLimitedException('itunes', $left);
+        }
         try {
+            ++$this->sent;
             $response = $this->http->request('GET', rtrim($this->baseUri, '/').'/'.$path, ['query' => $query]);
             $status = $response->getStatusCode();
             // Served as text/javascript: read as JSON whatever the header says.
@@ -224,8 +258,13 @@ final class ItunesCatalog implements CatalogInterface
             throw new UnavailableException('itunes', $e->getMessage(), null, $e);
         }
         if (403 === $status || 429 === $status) {
-            throw new RateLimitedException('itunes', self::retryAfter($headers['retry-after'][0] ?? null));
+            $wait = self::retryAfter($headers['retry-after'][0] ?? null);
+            $this->backoff?->hold($wait ?? 0, \sprintf('itunes answered %d', $status));
+
+            throw new RateLimitedException('itunes', $wait);
         }
+        // A 503's Retry-After, a RateLimit field with nothing left: the next calls wait.
+        $this->backoff?->observe($status, $headers);
         if (404 === $status) {
             return [];
         }

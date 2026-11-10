@@ -1,0 +1,217 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Binary operation "\." between '' '' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Binary operation "/" between mixed and 1000 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 3
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 13
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Method Omnisong\\Itunes\\ItunesCatalog\:\:get\(\) should return list\<array\<string, mixed\>\> but returns list\<array\<mixed, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Parameter \#2 \$query of method Omnisong\\Itunes\\ItunesCatalog\:\:get\(\) expects array\<string, bool\|float\|int\|string\>, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>links" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: ItunesCatalog.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: ItunesCatalogFactory.php
+
+		-
+			message: '#^Cannot access offset ''isrc'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access offset 1 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$artist on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$copyright on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$country on Omnisong\\Model\\PlatformLink\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$coverUrl on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$genre on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$id on Omnisong\\Model\\PlatformLink\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$ids on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$label on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$links on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$name on Omnisong\\Model\\Label\|null\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$releasedAt on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$title on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$trackCount on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$tracks on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 7
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$type on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$upc on Omnisong\\Model\\Release\|null\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$url on Omnisong\\Model\\Label\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot access property \$url on Omnisong\\Model\\PlatformLink\|null\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot call method format\(\) on DateTimeImmutable\|null\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Cannot call method get\(\) on Omnisong\\Model\\PlatformLinks\|null\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Offset 0 does not exist on array\{\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Offset 1 does not exist on array\{\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Parameter \#2 \$array of static method PHPUnit\\Framework\\Assert\:\:assertArrayNotHasKey\(\) expects array\<mixed\>\|ArrayAccess\<\(int\|string\), mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Parameter \#2 \$string of static method PHPUnit\\Framework\\Assert\:\:assertStringEndsWith\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Parameter \#2 \$string of static method PHPUnit\\Framework\\Assert\:\:assertStringStartsWith\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Tests/ItunesCatalogTest.php
+
+		-
+			message: '#^Property Omnisong\\Itunes\\Tests\\ItunesCatalogTest\:\:\$calls \(list\<array\{string, array\<string, string\>\}\>\) does not accept non\-empty\-list\<array\{string, array\<int\|string, array\<mixed\>\|string\>\}\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Tests/ItunesCatalogTest.php
