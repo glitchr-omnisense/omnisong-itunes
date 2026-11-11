@@ -189,6 +189,24 @@ final class ItunesCatalogTest extends TestCase
         $this->catalog(new MockResponse('{"errorMessage":"Invalid value(s) for key(s): [country]", "queryParameters":{}}', ['http_code' => 400]))->release(Reference::upc(self::UPC));
     }
 
+    /** A track whose duration is no number (a list, a word): the answer is not one the catalogue reads, a ProviderException, not a TypeError. */
+    public function testATrackWhoseDurationIsNotANumberIsAProviderException(): void
+    {
+        foreach ([['180000'], 'three minutes'] as $millis) {
+            $rows = [
+                ['wrapperType' => 'collection', 'collectionId' => 1, 'collectionName' => 'Album'],
+                ['wrapperType' => 'track', 'kind' => 'song', 'collectionId' => 1, 'trackId' => 11, 'trackName' => 'One', 'trackTimeMillis' => $millis],
+            ];
+            try {
+                $this->catalog(new MockResponse((string) json_encode(['resultCount' => 2, 'results' => $rows])))->release(Reference::upc(self::UPC));
+                self::fail('ProviderException expected');
+            } catch (ProviderException $e) {
+                self::assertSame('itunes', $e->catalog);
+                self::assertStringContainsString('trackTimeMillis', $e->getMessage());
+            }
+        }
+    }
+
     /** Retry-After may be an HTTP date (RFC 9110 §10.2.3): the seconds until then. */
     public function testARetryAfterDateIsTheSecondsUntilThen(): void
     {

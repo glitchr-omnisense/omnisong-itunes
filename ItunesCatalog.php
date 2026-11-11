@@ -112,7 +112,7 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
                     (string) ($row['trackName'] ?? ''),
                     isset($row['trackNumber']) ? (int) $row['trackNumber'] : null,
                     isset($row['discNumber']) ? (int) $row['discNumber'] : null,
-                    isset($row['trackTimeMillis']) ? (int) round($row['trackTimeMillis'] / 1000) : null,
+                    isset($row['trackTimeMillis']) ? self::seconds($row['trackTimeMillis']) : null,
                     null,
                     isset($row['previewUrl']) ? (string) $row['previewUrl'] : null,
                     isset($row['artistName']) ? (string) $row['artistName'] : null,
@@ -280,6 +280,21 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
         }
 
         return array_values(array_filter((array) ($answer['results'] ?? []), 'is_array'));
+    }
+
+    /**
+     * A track's trackTimeMillis in seconds, as the division read it: a number,
+     * or a string that starts with one.
+     *
+     * @throws ProviderException anything else: an answer the catalogue does not read
+     */
+    private static function seconds(mixed $millis): int
+    {
+        if (\is_int($millis) || \is_float($millis) || \is_bool($millis) || (\is_string($millis) && (is_numeric($millis) || 1 === preg_match('/^[ \t\n\r\v\f]*[+-]?(?:\d|\.\d)/', $millis)))) {
+            return (int) round((float) $millis / 1000);
+        }
+
+        throw new ProviderException('itunes', 'a track whose trackTimeMillis is not a number');
     }
 
     /** Retry-After in seconds, or as an HTTP date (RFC 9110 §10.2.3): the seconds until then, at least 1. */

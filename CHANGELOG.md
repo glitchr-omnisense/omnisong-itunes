@@ -9,3 +9,4 @@
 ### Fixed
 
 - `Retry-After` written as an HTTP date gives the seconds until then (at least 1), where it gave 0.
+- A track whose `trackTimeMillis` is not a number (a list, a word) makes the release a `ProviderException`, where the division threw a `TypeError`.
