@@ -76,7 +76,7 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
 
     public function links(Reference $reference): PlatformLinks
     {
-        return $this->release($reference)?->links ?? PlatformLinks::none();
+        return $this->release($reference)->links ?? PlatformLinks::none();
     }
 
     public function release(Reference $reference): ?Release
@@ -96,7 +96,7 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
 
         $rows = $this->get('lookup', $query + $store);
         $collection = self::first($rows, 'collection');
-        if (null === $collection && ($track = self::first($rows, 'track')) && isset($track['collectionId'])) {
+        if (null === $collection && ($track = self::first($rows, 'track')) && isset($track['collectionId']) && \is_scalar($track['collectionId'])) {
             // A track's id, or an ISRC: the answer is the track alone; its album is asked next.
             $rows = $this->get('lookup', ['id' => $track['collectionId']] + $store);
             $collection = self::first($rows, 'collection');
@@ -107,18 +107,18 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
 
         $tracks = [];
         foreach ($rows as $row) {
-            if ('track' === ($row['wrapperType'] ?? null) && 'song' === ($row['kind'] ?? null) && ($row['collectionId'] ?? null) === $collection['collectionId']) {
+            if ('track' === ($row['wrapperType'] ?? null) && 'song' === ($row['kind'] ?? null) && ($row['collectionId'] ?? null) === ($collection['collectionId'] ?? null)) {
                 $tracks[] = new Track(
-                    (string) ($row['trackName'] ?? ''),
-                    isset($row['trackNumber']) ? (int) $row['trackNumber'] : null,
-                    isset($row['discNumber']) ? (int) $row['discNumber'] : null,
+                    Data::cast($row['trackName'] ?? ''),
+                    isset($row['trackNumber']) ? Data::integer($row['trackNumber']) : null,
+                    isset($row['discNumber']) ? Data::integer($row['discNumber']) : null,
                     isset($row['trackTimeMillis']) ? self::seconds($row['trackTimeMillis']) : null,
                     null,
-                    isset($row['previewUrl']) ? (string) $row['previewUrl'] : null,
-                    isset($row['artistName']) ? (string) $row['artistName'] : null,
+                    isset($row['previewUrl']) ? Data::cast($row['previewUrl']) : null,
+                    isset($row['artistName']) ? Data::cast($row['artistName']) : null,
                     null,
-                    ['itunes' => (string) $row['trackId']],
-                    isset($row['trackViewUrl']) ? self::clean((string) $row['trackViewUrl']) : null,
+                    ['itunes' => Data::cast($row['trackId'] ?? null)],
+                    isset($row['trackViewUrl']) ? self::clean(Data::cast($row['trackViewUrl'])) : null,
                 );
             }
         }
@@ -151,40 +151,41 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
     /** @param array<string, mixed> $row a "collection" row */
     private static function hydrate(array $row, ?string $upc = null): Release
     {
-        $title = (string) ($row['collectionName'] ?? '');
+        $title = Data::cast($row['collectionName'] ?? '');
         $type = Release::ALBUM;
         // The store's own naming: "Title - Single", "Title - EP".
         if (preg_match('/^(.+) - (Single|EP)$/', $title, $m)) {
             [$title, $type] = [$m[1], 'EP' === $m[2] ? Release::EP : Release::SINGLE];
         }
-        $id = (string) $row['collectionId'];
+        $id = Data::cast($row['collectionId'] ?? null);
         $links = [];
         if (!empty($row['collectionViewUrl'])) {
-            $url = self::clean((string) $row['collectionViewUrl']);
+            $url = self::clean(Data::cast($row['collectionViewUrl']));
             $country = preg_match('#apple\.com/([a-z]{2})/#', $url, $m) ? strtoupper($m[1]) : null;
             $links[] = new PlatformLink(Platform::APPLE_MUSIC, $url, $id, null, $country);
             $links[] = new PlatformLink(Platform::ITUNES, $url.(str_contains($url, '?') ? '&' : '?').'app=itunes', $id, null, $country);
         }
         try {
-            $releasedAt = empty($row['releaseDate']) ? null : new \DateTimeImmutable((string) $row['releaseDate']);
+            // What is no text nor number named no date (its cast, "Array", was refused too).
+            $releasedAt = empty($row['releaseDate']) || !\is_scalar($row['releaseDate']) ? null : new \DateTimeImmutable((string) $row['releaseDate']);
         } catch (\Exception) {
             $releasedAt = null;
         }
 
         return new Release(
             $title,
-            isset($row['artistName']) ? (string) $row['artistName'] : null,
+            isset($row['artistName']) ? Data::cast($row['artistName']) : null,
             self::label($row['copyright'] ?? null),
             $upc,
             $releasedAt,
-            isset($row['artworkUrl100']) ? str_replace('100x100bb', '1200x1200bb', (string) $row['artworkUrl100']) : null,
+            isset($row['artworkUrl100']) ? str_replace('100x100bb', '1200x1200bb', Data::cast($row['artworkUrl100'])) : null,
             $type,
             [],
             new PlatformLinks($links),
-            isset($row['primaryGenreName']) ? (string) $row['primaryGenreName'] : null,
-            isset($row['trackCount']) ? (int) $row['trackCount'] : null,
+            isset($row['primaryGenreName']) ? Data::cast($row['primaryGenreName']) : null,
+            isset($row['trackCount']) ? Data::integer($row['trackCount']) : null,
             ['itunes' => $id, 'apple_music' => $id],
-            isset($row['copyright']) ? (string) $row['copyright'] : null,
+            isset($row['copyright']) ? Data::cast($row['copyright']) : null,
         );
     }
 
@@ -273,13 +274,13 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
         }
         $answer = json_decode($body, true);
         if ($status >= 400) {
-            throw new ProviderException('itunes', \sprintf('HTTP %d%s', $status, \is_array($answer) && isset($answer['errorMessage']) ? ' '.$answer['errorMessage'] : ''), $status);
+            throw new ProviderException('itunes', \sprintf('HTTP %d%s', $status, \is_array($answer) && isset($answer['errorMessage']) ? ' '.Data::cast($answer['errorMessage']) : ''), $status);
         }
         if (!\is_array($answer)) {
             throw new UnavailableException('itunes', 'an answer that is not JSON', $status);
         }
 
-        return array_values(array_filter((array) ($answer['results'] ?? []), 'is_array'));
+        return Data::maps($answer['results'] ?? []);
     }
 
     /**

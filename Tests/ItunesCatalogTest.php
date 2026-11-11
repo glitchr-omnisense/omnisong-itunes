@@ -25,7 +25,7 @@ final class ItunesCatalogTest extends TestCase
     private const UPC = '4015372820954';
     private const EMPTY = "\n\n\n{\n \"resultCount\":0,\n \"results\": []\n}\n\n\n";
 
-    /** @var list<array{string, array<string, string>}> the path and query of each call */
+    /** @var list<array{string, array<mixed>}> the path and query of each call */
     private array $calls = [];
 
     /** @param array<string, mixed> $options */
@@ -56,19 +56,22 @@ final class ItunesCatalogTest extends TestCase
     {
         $release = $this->catalog()->release(Reference::upc(self::UPC));
 
+        self::assertNotNull($release);
+        self::assertNotNull($release->label);
+        self::assertNotNull($release->links);
         self::assertSame('Perspectives Concertantes', $release->title);
-        self::assertStringStartsWith('Anaelle Tourret, NDR Elbphilharmonie Orchester', $release->artist);
+        self::assertStringStartsWith('Anaelle Tourret, NDR Elbphilharmonie Orchester', (string) $release->artist);
         self::assertSame(self::UPC, $release->upc);
         self::assertSame(Release::ALBUM, $release->type);
-        self::assertSame('2025-02-28', $release->releasedAt->format('Y-m-d'));
+        self::assertSame('2025-02-28', $release->releasedAt?->format('Y-m-d'));
         self::assertSame('℗ 2025 C2 Hamburg. Musik & Medienproduktion', $release->copyright);
         self::assertSame('C2 Hamburg. Musik & Medienproduktion', $release->label->name, 'who the ℗ line names');
         self::assertNull($release->label->url, 'the API knows no address for it');
-        self::assertStringEndsWith('/cover.jpg/1200x1200bb.jpg', $release->coverUrl);
+        self::assertStringEndsWith('/cover.jpg/1200x1200bb.jpg', (string) $release->coverUrl);
         self::assertSame('Klassik', $release->genre);
         self::assertSame(8, $release->trackCount);
         self::assertSame(['itunes' => '1793146044', 'apple_music' => '1793146044'], $release->ids);
-        self::assertSame('https://music.apple.com/de/album/perspectives-concertantes/1793146044', $release->links->get(Platform::APPLE_MUSIC)->url, 'without ?uo=4');
+        self::assertSame('https://music.apple.com/de/album/perspectives-concertantes/1793146044', $release->links->get(Platform::APPLE_MUSIC)?->url, 'without ?uo=4');
         self::assertSame('1793146044', $release->links->get(Platform::APPLE_MUSIC)->id);
         self::assertSame('DE', $release->links->get(Platform::APPLE_MUSIC)->country);
 
@@ -101,6 +104,7 @@ final class ItunesCatalogTest extends TestCase
         ];
         foreach ($references as $reference) {
             $release = $catalog->release($reference);
+            self::assertNotNull($release);
             self::assertSame('Perspectives Concertantes', $release->title);
             self::assertCount(8, $release->tracks);
             self::assertNull($release->upc, 'only a UPC asked for is known: the API does not give it');
@@ -114,14 +118,15 @@ final class ItunesCatalogTest extends TestCase
         $catalog = $this->catalog();
         $release = $catalog->release(Reference::id(Platform::ITUNES, '1793146055', Reference::SONG));
 
+        self::assertNotNull($release);
         self::assertSame('Perspectives Concertantes', $release->title);
         self::assertCount(8, $release->tracks);
         self::assertSame(['1793146055', '1793146044'], array_map(static fn ($c) => $c[1]['id'], $this->calls), 'the track, then its collection');
 
-        $this->calls = [];
-        self::assertCount(8, $catalog->release(Reference::isrc('DE-AR4-25-00001'))->tracks);
-        self::assertSame('DEAR42500001', $this->calls[0][1]['isrc']);
-        self::assertArrayNotHasKey('isrc', $this->calls[1][1]);
+        $asked = \count($this->calls);
+        self::assertCount(8, $catalog->release(Reference::isrc('DE-AR4-25-00001'))->tracks ?? []);
+        self::assertSame('DEAR42500001', $this->calls[$asked][1]['isrc']);
+        self::assertArrayNotHasKey('isrc', $this->calls[$asked + 1][1]);
     }
 
     public function testTheLinksAreApples(): void
@@ -130,7 +135,7 @@ final class ItunesCatalogTest extends TestCase
         $links = $catalog->links(Reference::upc(self::UPC));
 
         self::assertSame(['apple_music', 'itunes'], array_keys($links->toArray()));
-        self::assertSame('https://music.apple.com/de/album/perspectives-concertantes/1793146044?app=itunes', $links->get(Platform::ITUNES)->url);
+        self::assertSame('https://music.apple.com/de/album/perspectives-concertantes/1793146044?app=itunes', $links->get(Platform::ITUNES)?->url);
         self::assertCount(0, $catalog->links(Reference::upc('4000000000001')), 'unknown: none');
         self::assertNull($catalog->release(Reference::upc('4000000000001')));
     }
@@ -142,8 +147,8 @@ final class ItunesCatalogTest extends TestCase
         self::assertCount(1, $releases);
         self::assertSame('Strauss & Franck: Sonatas for Violin and Piano', $releases[0]->title);
         self::assertSame('Brieuc Vourch & Guillaume Vincent', $releases[0]->artist);
-        self::assertSame('FARAO classics', $releases[0]->label->name);
-        self::assertSame('2021', $releases[0]->releasedAt->format('Y'));
+        self::assertSame('FARAO classics', $releases[0]->label?->name);
+        self::assertSame('2021', $releases[0]->releasedAt?->format('Y'));
         self::assertSame([], $releases[0]->tracks);
         self::assertSame(['/search', ['term' => 'Brieuc Vourch', 'media' => 'music', 'entity' => 'album', 'attribute' => 'artistTerm', 'country' => 'de', 'limit' => '10']], $this->calls[0]);
 

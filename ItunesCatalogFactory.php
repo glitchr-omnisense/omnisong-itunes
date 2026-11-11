@@ -29,6 +29,6 @@ final class ItunesCatalogFactory extends CatalogFactory
 
     protected function build(Config $c): CatalogInterface
     {
-        return new ItunesCatalog($this->http ?? HttpClient::create(), (string) ($c['country'] ?: 'us'), (string) ($c['base_uri'] ?: ItunesCatalog::BASE_URI), $c->backoff());
+        return new ItunesCatalog($this->http ?? HttpClient::create(), Data::cast($c['country'] ?: 'us'), Data::cast($c['base_uri'] ?: ItunesCatalog::BASE_URI), $c->backoff());
     }
 }
