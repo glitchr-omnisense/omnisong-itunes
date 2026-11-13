@@ -37,6 +37,16 @@ Unknown is `null` / an empty list; 403 and 429 (about 20 calls a minute are allo
 `ProviderException`. The previews are Apple's, for promotional use next to a link to the store:
 keep the Apple Music link beside the player.
 
+## Install
+
+```sh
+composer require omnisong/itunes
+```
+
+It requires `omnisense/omnisong` `^1.0`, installed with it. A real call needs: no key and no
+account: the iTunes Search API is open (about 20 calls a minute). The first call, with this package:
+[omnisense/omnisong](https://github.com/glitchr-omnisense/omnisong#plain-php)'s README.
+
 ## Responsibility
 
 This package is an independent, unofficial client: it is not affiliated with, endorsed by or
