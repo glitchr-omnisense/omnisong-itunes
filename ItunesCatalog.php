@@ -189,7 +189,7 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
         );
     }
 
-    /** "℗ 2025 ES-DUR" names the label; a line without ℗ or © names nobody. */
+    /** "℗ 1995 Label Exemple" names the label; a line without ℗ or © names nobody. */
     private static function label(mixed $copyright): ?Label
     {
         if (!\is_string($copyright) || !preg_match('/[℗©]\s*(?:(?:19|20)\d{2}[\s,\/&-]*)*(.+?)\s*$/um', $copyright, $m)) {
@@ -200,7 +200,7 @@ final class ItunesCatalog implements CatalogInterface, DeclaresUsagePolicyInterf
         return '' !== $name ? new Label($name) : null;
     }
 
-    /** The album's id in an Apple Music / iTunes URL (…/album/name/1793146044?i=…, …/id1793146044); null for any other URL. */
+    /** The album's id in an Apple Music / iTunes URL (…/album/name/1644892939?i=…, …/id1644892939); null for any other URL. */
     private static function idOf(string $url): ?string
     {
         $host = strtolower((string) parse_url($url, \PHP_URL_HOST));

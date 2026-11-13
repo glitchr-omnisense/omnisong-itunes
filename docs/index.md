@@ -45,7 +45,7 @@ A `Reference`'s own `country` (`Reference::upc('...', 'fr')`) overrides `country
 |---|---|
 | `release()` by UPC/EAN | yes (`lookup?upc=`) |
 | `release()` by ISRC | yes: the track (`lookup?isrc=`), then its album (`lookup?id=<collectionId>`) |
-| `release()` by an Apple Music / iTunes URL | yes, by the album id in its path (`.../album/<slug>/1793146044`, `.../id1793146044`) |
+| `release()` by an Apple Music / iTunes URL | yes, by the album id in its path (`.../album/<slug>/1644892939`, `.../id1644892939`) |
 | `release()` by `Reference::id(Platform::ITUNES or Platform::APPLE_MUSIC, $id)` | yes; a track's id leads to its album |
 | `release()` by any other URL or platform id | no: `NotSupportedException` |
 | `links()` | the release's two Apple links, for every reference `release()` reads |
@@ -62,7 +62,7 @@ and its songs. When the answer has no album but a track (an ISRC, a track's id),
 | `title` | `collectionName`, without a final ` - Single` or ` - EP` |
 | `type` | `single` or `ep` from that suffix, else `album` |
 | `artist` | `artistName` |
-| `label` | a `Label` named after the `copyright` line's holder: `℗ 2025 ES-DUR` gives `ES-DUR`. A line with neither `℗` nor `©` gives none. The holder is who iTunes names, often the producer rather than the label (`℗ 2025 C2 Hamburg. Musik & Medienproduktion` in the recorded answer): give the site's own `Label` to the call to put the right one first |
+| `label` | a `Label` named after the `copyright` line's holder: `℗ 1995 Label Exemple` gives `Label Exemple`. A line with neither `℗` nor `©` gives none. The holder is who iTunes names (`℗ 1995 Deutsche Grammophon GmbH, Berlin` in the recorded answer), often the producer rather than the label on a small label's release: give the site's own `Label` to the call to put the right one first |
 | `upc` | the reference's UPC when it was asked by one; else null (the API does not return it) |
 | `releasedAt` | `releaseDate`; unreadable is null |
 | `coverUrl` | `artworkUrl100` with `100x100bb` replaced by `1200x1200bb` |
@@ -101,31 +101,33 @@ use Symfony\Component\HttpClient\HttpClient;
 
 $itunes = (new ItunesCatalogFactory(HttpClient::create()))->create(['country' => 'de']);
 
-$release = $itunes->release(Reference::upc('4015372820954'));
+$release = $itunes->release(Reference::upc('028948637751'));
 printf("%s | %s | %s | %s | %s | %d tracks | %s\n", $release->title, $release->type, $release->label?->name, $release->releasedAt?->format('Y-m-d'), $release->genre, $release->trackCount, $release->coverUrl);
 $t = $release->tracks[0];
 printf("%d-%d %s (%d s) isrc=%s composer=%s ids=%s\n  %s\n", $t->disc, $t->position, $t->title, $t->duration, var_export($t->isrc, true), var_export($t->composer, true), json_encode($t->ids), $t->url);
-foreach ($itunes->links(Reference::upc('4015372820954')) as $link) {
+foreach ($itunes->links(Reference::upc('028948637751')) as $link) {
     printf("  %s %s id=%s country=%s\n", $link->platform->value, $link->url, $link->id, $link->country);
 }
-foreach ($itunes->releases('Anaëlle Tourret', 3) as $r) {
+foreach ($itunes->releases('Carlos Kleiber', 3) as $r) {
     printf("  %s %s (%s) %s\n", $r->releasedAt?->format('Y-m-d'), $r->title, $r->type, $r->label?->name);
 }
 ```
 
-Run on 2026-10-26 on a `MockHttpClient` serving the package's recorded answers
-(`Tests/Fixtures/lookup-upc.json`, `search-albums.json`, recorded on 2026-10-03; the search fixture
-holds one album) instead of `HttpClient::create()`; the `>` lines are the mock's log of each request:
+Run on 2026-11-14 on a `MockHttpClient` serving the package's recorded answers
+(`Tests/Fixtures/lookup-upc.json`, `search-albums.json`, recorded that day; the search fixture
+holds three albums) instead of `HttpClient::create()`; the `>` lines are the mock's log of each request:
 
 ```
-> https://itunes.apple.com/lookup?upc=4015372820954&entity=song&country=de&limit=200
-Perspectives Concertantes | album | C2 Hamburg. Musik & Medienproduktion | 2025-02-28 | Klassik | 8 tracks | https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/03/84/2e/03842ead-96bc-0e38-6446-f61a9bfde85c/cover.jpg/1200x1200bb.jpg
-1-1 Concerto for Harp and Orchestra in E-Flat Major, Op. 74: I. Allegro Moderato (677 s) isrc=NULL composer=NULL ids={"itunes":"1793146055"}
-  https://music.apple.com/de/album/concerto-for-harp-and-orchestra-in-e-flat-major-op-74/1793146044?i=1793146055
-  apple_music https://music.apple.com/de/album/perspectives-concertantes/1793146044 id=1793146044 country=DE
-  itunes https://music.apple.com/de/album/perspectives-concertantes/1793146044?app=itunes id=1793146044 country=DE
-> https://itunes.apple.com/search?term=Anaëlle Tourret&media=music&entity=album&attribute=artistTerm&country=de&limit=3
-  2021-07-17 Strauss & Franck: Sonatas for Violin and Piano (album) FARAO classics
+> https://itunes.apple.com/lookup?upc=028948637751&entity=song&country=de&limit=200
+Beethoven: Symphonies Nos. 5 & 7 | album | Deutsche Grammophon GmbH, Berlin | 1995-02-20 | Klassik | 8 tracks | https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/b7/b0/a5/b7b0a5d5-e487-4dcb-f0b5-04d16c78f693/22UMGIM89320.rgb.jpg/1200x1200bb.jpg
+1-1 Symphony No. 5 in C Minor, Op. 67: I. Allegro con brio (442 s) isrc=NULL composer=NULL ids={"itunes":"1644892943"}
+  https://music.apple.com/de/album/symphony-no-5-in-c-minor-op-67-i-allegro-con-brio/1644892939?i=1644892943
+  apple_music https://music.apple.com/de/album/beethoven-symphonies-nos-5-7/1644892939 id=1644892939 country=DE
+  itunes https://music.apple.com/de/album/beethoven-symphonies-nos-5-7/1644892939?app=itunes id=1644892939 country=DE
+> https://itunes.apple.com/search?term=Carlos Kleiber&media=music&entity=album&attribute=artistTerm&country=de&limit=3
+  2010-01-01 Carlos Kleiber - Complete Recordings on Deutsche Grammophon (album) Deutsche Grammophon GmbH, Berlin
+  1995-02-20 Beethoven: Symphonies Nos. 5 & 7 (album) Deutsche Grammophon GmbH, Berlin
+  1979-01-01 Schubert: Symphonies Nos. 3 & 8 "Unfinished" (album) Deutsche Grammophon GmbH, Berlin
 ```
 
 The `links()` call sent nothing: it is the release already answered. In Symfony:
@@ -156,10 +158,10 @@ omnisong:
 ## Verified, and not
 
 The package's tests (`Tests/ItunesCatalogTest.php`, 7 tests) run on answers recorded from the API on
-2026-10-03 (store `de`): a UPC gives the release with its tracks and previews, an Apple Music URL or
+2026-11-14 (store `de`): a UPC gives the release with its tracks and previews, an Apple Music URL or
 its id the same release, a track's id or an ISRC its album, the links are Apple's, an artist's
 albums come newest first, what is not Apple's is not read, and 403, 429 and 5xx are unavailable.
-They pass (2026-10-26, PHP 8.4). The API was last called live on 2026-10-05
+They pass (2026-11-14, PHP 8.4). The API was last called live on 2026-11-14
 ([omnisense/omnisong's installation](https://github.com/glitchr-omnisense/omnisong/blob/1.x/docs/installation.md)).
 
 ## Usage policy
